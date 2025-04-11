@@ -13,7 +13,7 @@ export class Boleto {
   @Column("decimal")
   valor: number;
 
-  @Column()
+  @Column({ unique: true })
   linha_digitavel: string;
 
   @Column()

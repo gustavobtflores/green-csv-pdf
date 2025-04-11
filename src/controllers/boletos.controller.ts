@@ -47,7 +47,20 @@ class BoletosController {
 
       const boletos = [];
 
+      const results = { processed: 0, duplicated: [] as string[] };
+
       for (const boleto of registros) {
+        results.processed++;
+
+        const existingBoleto = await db.getRepository(Boleto).findOne({
+          where: { linha_digitavel: boleto.linha_digitavel },
+        });
+
+        if (existingBoleto) {
+          results.duplicated.push(existingBoleto.linha_digitavel);
+          continue;
+        }
+
         const mappedLote = await db.getRepository(LoteMapping).findOne({
           where: { id_externo: boleto.unidade },
         });
@@ -76,8 +89,9 @@ class BoletosController {
 
       const insertedBoletos = await db.createQueryBuilder().insert().into(Boleto).values(boletos).execute();
 
-      res.json({ insertedBoletos });
+      res.json({ results, boletos: insertedBoletos.raw });
     } catch (err) {
+      console.error("Erro ao processar CSV", err);
       res.status(500).json({ erro: "Erro ao processar CSV", detalhes: err });
     }
   }

@@ -9,7 +9,7 @@ export class LoteMapping {
   @Column({ unique: true })
   id_externo: string;
 
-  @ManyToOne(() => Lote, { eager: true, nullable: false })
+  @ManyToOne(() => Lote, { eager: true, nullable: false, onDelete: "CASCADE" })
   @JoinColumn({ name: "lote_id" })
   lote: Lote;
 }
