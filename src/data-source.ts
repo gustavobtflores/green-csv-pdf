@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Lote } from "./entities/Lote";
 import { Boleto } from "./entities/Boleto";
+import { LoteMapping } from "./entities/LoteMapping";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: "green",
   synchronize: true,
   logging: false,
-  entities: [Lote, Boleto],
+  entities: [Lote, LoteMapping, Boleto],
   migrations: [],
   subscribers: [],
 });
