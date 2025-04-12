@@ -12,4 +12,6 @@ router.get("/boletos", BoletosController.getAll);
 
 router.post("/boletos/import/csv", upload.single("file"), BoletosController.importWithCSV);
 
+router.post("/boletos/import/pdf", upload.single("file"), BoletosController.importWithPDF);
+
 export { router };

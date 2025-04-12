@@ -10,14 +10,17 @@ async function seed() {
 
   const lotes: Partial<Lote>[] = [
     {
+      id: 1,
       nome: "0017",
       ativo: true,
     },
     {
+      id: 2,
       nome: "0018",
       ativo: true,
     },
     {
+      id: 10,
       nome: "0019",
       ativo: true,
     },

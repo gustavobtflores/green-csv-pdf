@@ -1,4 +1,3 @@
-// Boleto.ts
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Lote } from "./Lote";
 
@@ -13,7 +12,7 @@ export class Boleto {
   @Column("decimal")
   valor: number;
 
-  @Column({ unique: true })
+  @Column()
   linha_digitavel: string;
 
   @Column()
