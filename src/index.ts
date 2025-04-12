@@ -1,20 +1,30 @@
-import express, { Request, Response } from "express";
-import { upload } from "./config/multer";
-import BoletosController from "./controllers/boletos.controller";
+import "dotenv/config";
+import { SetupServer } from "./server";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+enum ExitStatus {
+  Success = 0,
+  Failure = 1,
+}
 
-app.use(express.json());
+(async () => {
+  try {
+    const server = new SetupServer(3000);
+    await server.init();
+    server.start();
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Base route")
-});
+    const exitSignals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGQUIT"];
 
-app.get("/boletos", BoletosController.getAll);
-
-app.post("/boletos/import/csv", upload.single("file"), BoletosController.importWithCSV);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+    for (const signal of exitSignals) {
+      process.on(signal, async () => {
+        try {
+          await server.close();
+          process.exit(ExitStatus.Success);
+        } catch (err) {
+          process.exit(ExitStatus.Failure);
+        }
+      });
+    }
+  } catch (err) {
+    process.exit(ExitStatus.Failure);
+  }
+})();

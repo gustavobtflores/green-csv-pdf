@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import { parse } from "csv-parse/sync";
-import { getDataSource } from "../database";
-import { Boleto } from "../entities/Boleto";
-import { Lote } from "../entities/Lote";
-import { LoteMapping } from "../entities/LoteMapping";
+import { boletoRepository } from "../repositories/BoletoRepository";
+import { loteRepository } from "../repositories/LoteRepository";
+import { loteMappingRepository } from "../repositories/LoteMappingRepository";
 
 interface RegistroCSV {
   nome: string;
@@ -17,9 +16,7 @@ class BoletosController {
 
   /* GET /boletos */
   async getAll(req: Request, res: Response) {
-    const db = await getDataSource();
-
-    const boletos = await db.getRepository(Boleto).find();
+    const boletos = await boletoRepository.find({});
 
     res.send({ data: boletos });
   }
@@ -27,8 +24,6 @@ class BoletosController {
   /* POST /boletos/import/csv */
   async importWithCSV(req: Request, res: Response) {
     try {
-      const db = await getDataSource();
-
       const fileBuffer = req.file?.buffer;
 
       if (!fileBuffer) {
@@ -52,7 +47,7 @@ class BoletosController {
       for (const boleto of registros) {
         results.processed++;
 
-        const existingBoleto = await db.getRepository(Boleto).findOne({
+        const existingBoleto = await boletoRepository.findOne({
           where: { linha_digitavel: boleto.linha_digitavel },
         });
 
@@ -61,19 +56,17 @@ class BoletosController {
           continue;
         }
 
-        const mappedLote = await db.getRepository(LoteMapping).findOne({
-          where: { id_externo: boleto.unidade },
-        });
+        const mappedLote = await loteMappingRepository.findOneByExternalId(boleto.unidade);
 
         const loteId: string = mappedLote?.lote.id.toString() || boleto.unidade.padStart(4, "0");
 
-        const lote = await db.getRepository(Lote).findOne({ where: { nome: loteId } });
+        const lote = await loteRepository.findOneByName(loteId);
 
         if (!lote) {
           throw new Error(`Lote com nome ${loteId} não encontrado`);
         }
 
-        await db.getRepository(LoteMapping).save({
+        await loteMappingRepository.save({
           id_externo: boleto.unidade,
           lote,
         });
@@ -87,7 +80,7 @@ class BoletosController {
         });
       }
 
-      const insertedBoletos = await db.createQueryBuilder().insert().into(Boleto).values(boletos).execute();
+      const insertedBoletos = await boletoRepository.insert(boletos);
 
       res.json({ results, boletos: insertedBoletos.raw });
     } catch (err) {

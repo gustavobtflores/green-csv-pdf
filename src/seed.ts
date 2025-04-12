@@ -1,9 +1,9 @@
-import { getDataSource } from "./database";
 import { Boleto } from "./entities/Boleto";
 import { Lote } from "./entities/Lote";
+import { AppDataSource } from "./providers/data-source.provider";
 
 async function seed() {
-  const db = await getDataSource();
+  const db = await AppDataSource.initialize();
 
   await db.getRepository(Boleto).delete({});
   await db.getRepository(Lote).delete({});
