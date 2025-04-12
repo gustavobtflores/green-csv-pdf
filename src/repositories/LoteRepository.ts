@@ -8,4 +8,8 @@ class LoteRepository extends Repository<Lote> {
   }
 }
 
-export const loteRepository = AppDataSource.getRepository(Lote).extend(LoteRepository) as unknown as LoteRepository;
+export const loteRepository = AppDataSource.getRepository(Lote).extend({
+  findOneByName: async (name: string): Promise<Lote | null> => {
+    return AppDataSource.getRepository(Lote).findOne({ where: { nome: name } });
+  },
+}) as unknown as LoteRepository;

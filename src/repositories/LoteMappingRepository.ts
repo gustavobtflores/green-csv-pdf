@@ -1,5 +1,4 @@
 import { Repository } from "typeorm";
-import { Lote } from "../entities/Lote";
 import { AppDataSource } from "../providers/data-source.provider";
 import { LoteMapping } from "../entities/LoteMapping";
 
@@ -9,4 +8,8 @@ class LoteMappingRepository extends Repository<LoteMapping> {
   }
 }
 
-export const loteMappingRepository = AppDataSource.getRepository(Lote).extend(LoteMappingRepository) as unknown as LoteMappingRepository;
+export const loteMappingRepository = AppDataSource.getRepository(LoteMapping).extend({
+  findOneByExternalId: async (id: string): Promise<LoteMapping | null> => {
+    return AppDataSource.getRepository(LoteMapping).findOne({ where: { id_externo: id } });
+  },
+}) as unknown as LoteMappingRepository;

@@ -23,14 +23,7 @@ class BoletosController {
 
   /* POST /boletos/import/csv */
   async importWithCSV(req: Request, res: Response) {
-    try {
-      const fileBuffer = req.file?.buffer;
-
-      if (!fileBuffer) {
-        res.status(400).json({ erro: "Arquivo ausente" });
-        return;
-      }
-
+    function parseCSV(fileBuffer: Buffer) {
       const content = fileBuffer.toString("utf-8");
 
       const registros: RegistroCSV[] = parse(content, {
@@ -40,6 +33,19 @@ class BoletosController {
         delimiter: ";",
       });
 
+      return registros;
+    }
+
+    try {
+      const fileBuffer = req.file?.buffer;
+
+      if (!fileBuffer) {
+        res.status(400).json({ error: "Arquivo ausente" });
+        return;
+      }
+
+      const registros = parseCSV(fileBuffer);
+
       const boletos = [];
 
       const results = { processed: 0, duplicated: [] as string[] };
@@ -47,12 +53,12 @@ class BoletosController {
       for (const boleto of registros) {
         results.processed++;
 
-        const existingBoleto = await boletoRepository.findOne({
-          where: { linha_digitavel: boleto.linha_digitavel },
+        const existingBoleto = await boletoRepository.existsBy({
+          linha_digitavel: boleto.linha_digitavel,
         });
 
         if (existingBoleto) {
-          results.duplicated.push(existingBoleto.linha_digitavel);
+          results.duplicated.push(boleto.linha_digitavel);
           continue;
         }
 
@@ -82,10 +88,10 @@ class BoletosController {
 
       const insertedBoletos = await boletoRepository.insert(boletos);
 
-      res.json({ results, boletos: insertedBoletos.raw });
+      res.status(201).json({ results, boletos: insertedBoletos.raw });
     } catch (err) {
       console.error("Erro ao processar CSV", err);
-      res.status(500).json({ erro: "Erro ao processar CSV", detalhes: err });
+      res.status(500).json({ error: "Erro ao processar CSV", details: err });
     }
   }
 }
