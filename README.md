@@ -1,4 +1,4 @@
-# Gerenciamento de boletos
+# Importação de boletos
 
 Este projeto consiste em uma API para gerenciamento de boletos, com importação via CSV e PDF, geração de relatório em PDF, e mapeamento entre unidades externas e lotes internos.
 
