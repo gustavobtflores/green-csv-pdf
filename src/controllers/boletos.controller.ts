@@ -74,9 +74,9 @@ class BoletosController {
         return;
       }
 
-      await importPdfService.execute(fileBuffer);
+      const results = await importPdfService.execute(fileBuffer);
 
-      res.status(201).json({ message: "Boletos salvos com sucesso" });
+      res.status(201).json(results);
     } catch (err) {
       console.error("Erro ao processar PDF", err);
       res.status(500).json({ error: "Erro ao processar PDF", details: err });

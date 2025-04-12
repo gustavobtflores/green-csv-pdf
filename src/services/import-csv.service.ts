@@ -3,6 +3,7 @@ import { boletoRepository } from "../repositories/BoletoRepository";
 import { loteMappingRepository } from "../repositories/LoteMappingRepository";
 import { loteRepository } from "../repositories/LoteRepository";
 import { Registro } from "../types/registro";
+import { Boleto } from "../entities/Boleto";
 
 class ImportCSVService {
   public async execute(fileBuffer: Buffer) {
@@ -23,7 +24,7 @@ class ImportCSVService {
 
     const boletos = [];
 
-    const results = { processed: 0, duplicated: [] as string[] };
+    const results = { processed: 0, duplicated: [] as Partial<Boleto>[] };
 
     for (const boleto of registros) {
       results.processed++;
@@ -40,7 +41,10 @@ class ImportCSVService {
       });
 
       if (existingBoleto) {
-        results.duplicated.push(boleto.linha_digitavel);
+        results.duplicated.push({
+          linha_digitavel: boleto.linha_digitavel,
+          nome_sacado: boleto.nome,
+        });
         continue;
       }
 

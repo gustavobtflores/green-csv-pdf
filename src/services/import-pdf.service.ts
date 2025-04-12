@@ -5,35 +5,38 @@ import pdf from "pdf-parse";
 import fs from "fs";
 
 class ImportPDFService {
-  public async execute(fileBuffer: Buffer) {
-    async function splitPdf(fileBuffer: Buffer) {
-      const pdfDoc = await PDFDocument.load(fileBuffer);
+  private async splitPdfInPages(fileBuffer: Buffer) {
+    const pdfDoc = await PDFDocument.load(fileBuffer);
 
-      let pages = [];
+    let pages = [];
 
-      for (let i = 0; i < pdfDoc.getPageCount(); i++) {
-        const newPdf = await PDFDocument.create();
-        const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+    for (let i = 0; i < pdfDoc.getPageCount(); i++) {
+      const newPdf = await PDFDocument.create();
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
 
-        newPdf.addPage(copiedPage);
+      newPdf.addPage(copiedPage);
 
-        const pdfBytes = await newPdf.save();
+      const pdfBytes = await newPdf.save();
 
-        pages.push(pdfBytes);
-      }
-
-      return pages;
+      pages.push(pdfBytes);
     }
 
-    const pages = await splitPdf(fileBuffer);
+    return pages;
+  }
+
+  public async execute(fileBuffer: Buffer) {
+    const pages = await this.splitPdfInPages(fileBuffer);
+    const results = { processed_pages: 0, not_found: [] as string[] };
 
     for (const page of pages) {
+      results.processed_pages++;
       const data = await pdf(page as Buffer);
       const name = data.text.trim();
 
       const boleto = await boletoRepository.findOneBy({ nome_sacado: name });
 
       if (!boleto) {
+        results.not_found.push(name);
         continue;
       }
 
@@ -43,6 +46,8 @@ class ImportPDFService {
 
       fs.writeFileSync(path.resolve(__dirname, "../../boletos", `${boleto.id}.pdf`), page);
     }
+
+    return results;
   }
 }
 
