@@ -24,8 +24,6 @@ git clone https://github.com/gustavobtflores/green-csv-pdf
 cd green-csv-pdf
 ```
 
-````
-
 2. Instale as dependências:
 
 ```bash
@@ -37,4 +35,3 @@ npm install
 ```bash
 npm run dev
 ```
-````
